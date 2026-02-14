@@ -76,23 +76,28 @@
 
         /* Juego: Verdadero/Falso */
         .j1-display { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 1rem; flex:1; justify-content: center; }
-        .img-card { width: 100%; max-width: 600px; min-height: 180px; background: #fff; border: 4px solid #e6f2ff; border-radius: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(0,0,0,0.08); padding: 2rem; }
-        #j1Text { font-size: 1.6rem; font-weight: 700; color: var(--blue-dark); text-align: center; line-height: 1.4; }
+        .img-card { width: 100%; max-width: 600px; min-height: 220px; background: #fff; border: 4px solid #e6f2ff; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(0,0,0,0.08); padding: 2rem; position: relative; }
+        #j1Text { font-size: 1.6rem; font-weight: 700; color: var(--blue-dark); text-align: center; line-height: 1.4; margin-bottom: 1.5rem; }
         
+        /* Botón Play Circular SVG */
+        .btn-repeat { background: var(--blue-600); width: 65px; height: 65px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .btn-repeat:hover { background: var(--orange); transform: scale(1.1); box-shadow: 0 6px 14px rgba(0,0,0,0.2); }
+        .btn-repeat svg { width: 30px; height: 30px; fill: white; margin-left: 4px; }
+
         .j1-controls { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; width: 100%; }
         
         /* BOTONES 4:3 con iconos */
         .btn-j1 { 
-            width: 200px; 
-            height: 150px; /* Relación 4:3 */
+            width: 180px; 
+            height: 130px; 
             flex-direction: column;
             padding: 10px;
             text-shadow: 0 1px 2px rgba(0,0,0,0.2);
             justify-content: center;
-            font-size: 1.5rem;
-            gap: 10px;
+            font-size: 1.4rem;
+            gap: 8px;
         }
-        .btn-j1 .icon-large { font-size: 3rem; }
+        .btn-j1 .icon-large { font-size: 2.5rem; }
         .btn-green { background-color: var(--green) !important; }
         .btn-red { background-color: var(--red) !important; }
 
@@ -152,6 +157,9 @@
         <div class="j1-display">
             <div class="img-card" id="j1Card">
                 <p id="j1Text"></p>
+                <div class="btn-repeat" id="repeatAudioBtn" title="Escuchar de nuevo">
+                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </div>
             </div>
             <div class="j1-controls">
                 <button class="btn btn-j1 btn-green" id="btnVerdadero">
@@ -182,7 +190,7 @@
 </div>
 
 <script>
-    // Configuración de Audios del Sistema (URLs RAW)
+    // Configuración de Audios del Sistema
     const audioFiles = {
         completado: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Completado.mp3',
         correcto: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Correcto.mp3',
@@ -209,7 +217,6 @@
     let j1Idx = 0, j1Correct = 0, j1ActiveList = [];
     let currentVoiceAudio = null;
 
-    // Precarga de sonidos del sistema
     const audioObjects = {};
     Object.keys(audioFiles).forEach(key => {
         audioObjects[key] = new Audio(audioFiles[key]);
@@ -223,12 +230,17 @@
         a.play().catch(e => console.log("Error audio:", e));
     }
 
-    function playVoice(url) {
+    // Función de voz con retardo opcional de 500ms
+    function playVoice(url, delay = 0) {
         if(isMuted) return;
         if(currentVoiceAudio) { currentVoiceAudio.pause(); currentVoiceAudio = null; }
+        
         const secureUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
-        currentVoiceAudio = new Audio(secureUrl);
-        currentVoiceAudio.play().catch(e => console.log("Error voz:", e));
+        
+        setTimeout(() => {
+            currentVoiceAudio = new Audio(secureUrl);
+            currentVoiceAudio.play().catch(e => console.log("Error voz:", e));
+        }, delay);
     }
 
     function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
@@ -256,10 +268,10 @@
     function initGame() {
         j1Idx = 0; j1Correct = 0;
         j1ActiveList = shuffle([...J1_ITEMS]);
-        updateCard();
+        updateCard(false); // La primera tarjeta suena sin retardo
     }
 
-    function updateCard() {
+    function updateCard(shouldDelay = true) {
         if(j1Idx >= j1ActiveList.length) {
             setTimeout(showFinal, 600);
             return;
@@ -267,7 +279,9 @@
         const item = j1ActiveList[j1Idx];
         document.getElementById('j1Text').textContent = item.text;
         document.getElementById('prog1').style.width = ((j1Idx / j1ActiveList.length) * 100) + '%';
-        playVoice(item.audio);
+        
+        // Retrasamos 500ms si viene de una respuesta previa
+        playVoice(item.audio, shouldDelay ? 500 : 0);
     }
 
     function checkAnswer(userChoice) {
@@ -279,7 +293,7 @@
             applyShake('j1Card');
         }
         j1Idx++;
-        updateCard();
+        updateCard(true); // Las siguientes tarjetas suenan con retardo
     }
 
     function showFinal() {
@@ -331,6 +345,12 @@
             document.getElementById('timerDisplay').textContent = formatTime(totalElapsed); 
         }, 100);
         initGame();
+    };
+
+    document.getElementById('repeatAudioBtn').onclick = () => {
+        if (j1Idx < j1ActiveList.length) {
+            playVoice(j1ActiveList[j1Idx].audio, 0); // Al repetir manualmente no hay retardo
+        }
     };
 
     document.getElementById('btnVerdadero').onclick = () => checkAnswer(true);
