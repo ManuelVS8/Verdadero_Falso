@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="google" content="notranslate">
+    <title>¿Cuánto sabes sobre las plantas?</title>
+    <link rel="icon" type="image/x-icon" href="https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/icono.ico">
+    <style>
+        /* ====== Reset & base ====== */
+        * { box-sizing: border-box; margin:0; padding:0; }
+        :root{
+            --blue-dark:#04032B;
+            --blue-700:#1a3a5f;
+            --blue-600:#254fba;
+            --orange:#f59e42;
+            --orange-700:#e67e22;
+            --bg-grad-1:#1a3a5f;
+            --bg-grad-2:#0d2340;
+            --white:#ffffff;
+            --green:#2ecc71;
+            --red:#e74c3c;
+            --panel:#E8EAFF;
+        }
+        body{
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
+            min-height:100vh; 
+            display:flex; 
+            justify-content:center; 
+            align-items: flex-start; 
+            color:#333; 
+            padding: 40px 10px 20px 10px; 
+        }
+        .game-container{
+            background:var(--white); border-radius:16px; box-shadow:0 12px 24px rgba(0,0,0,.12);
+            padding:1.5rem; max-width:980px; width:100%; min-height:640px; position:relative; overflow:hidden;
+            display:flex; flex-direction:column;
+        }
+        header{ text-align:center; margin-bottom:.8rem; margin-top:0.5rem; }
+        h1{ color:var(--blue-dark); font-size:clamp(1.8rem,5vw,2.8rem); font-weight:900; letter-spacing:.5px; margin-bottom: 0.5rem; }
+        .subtitle{ color:var(--blue-700); font-size:clamp(1rem,3vw,1.3rem); margin-top:.25rem; font-weight: 600; line-height: 1.4; }
+        .highlight-keyword{ color:var(--orange); font-weight:800; }
+        .text-green { color: var(--green); font-weight: 800; }
+        .text-red { color: var(--red); font-weight: 800; }
+
+        /* Buttons Base */
+        .btn{ color:#fff; border:none; border-radius:12px; cursor:pointer; font-weight:800;
+            transition:transform .1s ease, box-shadow .2s ease, background-color .25s ease;
+            display:inline-flex; align-items:center; justify-content:center; font-size: 1.1rem; gap: 10px; }
+        .btn:hover{ transform:translateY(-3px); box-shadow:0 6px 14px rgba(0,0,0,.15); }
+        .btn:active{ transform:translateY(0); }
+        
+        .btn-start { background: var(--orange); margin: 1rem auto; padding: 0.75rem 2rem; height: 55px; font-size: 1.3rem; min-width: 200px; }
+
+        /* Pantallas */
+        .screen{ display:none; animation:fadeIn .4s ease; flex-direction: column; flex:1; width: 100%; }
+        .screen.active{ display:flex; }
+        @keyframes fadeIn{ from{opacity:0; transform:translateY(15px);} to{opacity:1; transform:translateY(0);} }
+
+        /* Info & Progress */
+        .game-info{ display:flex; gap:1rem; align-items:center; justify-content:space-between; margin:1rem 0; width: 100%; }
+        .timer{ font-weight:900; color:var(--blue-700); font-size:1.2rem; min-width: 100px; text-align: right; }
+        .progress-bar{ flex:1; height:14px; background:#e6f2ff; border-radius:999px; overflow:hidden; border: 1px solid #d3e2ff; }
+        .progress-fill{ height:100%; width:0%; background: var(--orange); transition:width .4s ease; }
+
+        /* Pantalla Inicio */
+        .start-content{ display:flex; flex-direction:column; align-items:center; flex:1; padding:1rem; text-align: center; }
+        .advice-box{ background:var(--panel); border-left:5px solid var(--blue-700); padding:1.5rem; border-radius:12px;
+            color:var(--blue-700); max-width:800px; font-size:1.2rem; line-height: 1.6; margin-bottom: 1.5rem; }
+        .advice-anim-text { display: block; text-align: center; font-weight: 900; margin-top: 1rem; font-size: 1.5rem; }
+        .start-image-container { width: 100%; display: flex; justify-content: center; margin-top: auto; }
+        .start-image{ max-width: 450px; width: 100%; height: auto; }
+
+        .mute-btn{ position:absolute; top:1rem; right:1rem; background:var(--orange); color:#fff; border:2px solid #fff; width:42px; height:42px; border-radius:50%; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; z-index:100; }
+
+        /* Juego: Verdadero/Falso */
+        .j1-display { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 1rem; flex:1; justify-content: center; }
+        .img-card { width: 100%; max-width: 600px; min-height: 180px; background: #fff; border: 4px solid #e6f2ff; border-radius: 20px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(0,0,0,0.08); padding: 2rem; }
+        #j1Text { font-size: 1.6rem; font-weight: 700; color: var(--blue-dark); text-align: center; line-height: 1.4; }
+        
+        .j1-controls { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; width: 100%; }
+        
+        /* BOTONES 4:3 con iconos */
+        .btn-j1 { 
+            width: 200px; 
+            height: 150px; /* Relación 4:3 */
+            flex-direction: column;
+            padding: 10px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            justify-content: center;
+            font-size: 1.5rem;
+            gap: 10px;
+        }
+        .btn-j1 .icon-large { font-size: 3rem; }
+        .btn-green { background-color: var(--green) !important; }
+        .btn-red { background-color: var(--red) !important; }
+
+        /* Pantalla Final */
+        .results{ display:flex; flex-direction:column; align-items:center; gap:0.8rem; text-align:center; flex:1; justify-content:center; padding: 1rem; }
+        .big-score{ font-size:clamp(3rem,8vw,4.5rem); color:var(--blue-600); font-weight:900; margin: 0.5rem 0; }
+        #trophyBox { display: none; font-size: 5.5rem; animation: bounce 1s ease infinite; margin-bottom: 0.5rem; }
+        @keyframes bounce { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-20px); } }
+        .final-time { font-size: 1.3rem; color: var(--blue-700); font-weight: 600; margin-bottom: 0.5rem; }
+        .school-logo { width: 180px; margin-top: 1rem; }
+        .credit { font-weight: 700; color: #555; }
+
+        /* Animaciones */
+        .shake { animation: shakeAnim 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shakeAnim {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        .confetti{ position:fixed; width:12px; height:12px; border-radius:50%; animation: confetti-fall 3s linear forwards; z-index:1000; pointer-events: none; }
+        @keyframes confetti-fall{ 0%{ transform:translate(0, -20px) rotate(0); opacity:1;} 100%{ transform:translate(var(--tx), var(--ty)) rotate(360deg); opacity:0; } }
+    </style>
+</head>
+<body>
+
+<div class="game-container" id="mainWrapper">
+    <button class="mute-btn" id="muteBtn">🔊</button>
+
+    <section class="screen active" id="startScreen">
+        <header>
+            <h1>¿Cuánto sabes sobre las plantas?</h1>
+            <div class="subtitle">Lee y escuchas las afirmaciones sobre las plantas e indica si son verdaderas o falsas</div>
+        </header>
+        <div class="start-content">
+            <div class="advice-box">
+                Lee y escuchas las afirmaciones sobre <span class="highlight-keyword">las plantas</span>, <span class="highlight-keyword">verdadero</span> y <span class="highlight-keyword">falso</span>.
+                <div class="advice-anim-text"><b>¡Ánimo!</b></div>
+            </div>
+            <div class="start-image-container">
+                <img class="start-image" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Ni%C3%B1os.png" alt="Niños">
+            </div>
+            <button class="btn btn-start" id="startBtn">Comenzar</button>
+        </div>
+    </section>
+
+    <section class="screen" id="game1Screen">
+        <header>
+            <h1>¿Verdadero o falso?</h1>
+            <div class="subtitle">Escucha y lee las siguientes informaciones e indica si son <span class="text-green">verdaderas</span> o <span class="text-red">falsas</span>.</div>
+        </header>
+        <div class="game-info">
+            <div class="progress-bar"><div class="progress-fill" id="prog1"></div></div>
+            <div class="timer" id="timerDisplay">00:00.0</div>
+        </div>
+        <div class="j1-display">
+            <div class="img-card" id="j1Card">
+                <p id="j1Text"></p>
+            </div>
+            <div class="j1-controls">
+                <button class="btn btn-j1 btn-green" id="btnVerdadero">
+                    <span class="icon-large">✅</span>
+                    Verdadero
+                </button>
+                <button class="btn btn-j1 btn-red" id="btnFalso">
+                    <span class="icon-large">⛔</span>
+                    Falso
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="screen" id="finalScreen">
+        <header><h1>¿Cuánto sabes sobre las plantas?</h1></header>
+        <div class="results">
+            <div id="trophyBox">🏆</div>
+            <div style="font-size: 1.5rem; font-weight: 700;">Puntuación:</div>
+            <div class="big-score" id="finalScore">0</div>
+            <div class="final-time">Tiempo total: <span id="totalTime">00:00.0</span></div>
+            <div id="finalMsg" class="subtitle" style="margin-bottom: 1.5rem;"></div>
+            <button class="btn btn-start" id="restartBtn">Volver al menú</button>
+            <div class="credit">Creado por Manuel J. Ventura</div>
+            <img class="school-logo" src="https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Siurot.png" alt="Logo Colegio">
+        </div>
+    </section>
+</div>
+
+<script>
+    // Configuración de Audios del Sistema (URLs RAW)
+    const audioFiles = {
+        completado: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Completado.mp3',
+        correcto: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Correcto.mp3',
+        victoria: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Termin%C3%A9.mp3',
+        error: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Error.mp3',
+        tap: 'https://raw.githubusercontent.com/ManuelVS8/Efectos_audio/refs/heads/main/Tap.mp3'
+    };
+
+    // Datos del Juego
+    const J1_ITEMS = [
+        { text: "Las plantas nacen, crecen, se reproducen y mueren.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/V1.mp3", isTrue: true },
+        { text: "Las plantas necesitan tierra, agua, luz y aire.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/V2.mp3", isTrue: true },
+        { text: "Las plantas proporcionan alimentos, materiales y oxígeno.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/V3.mp3", isTrue: true },
+        { text: "Las hojas permiten respirar y fabrican el alimento de la planta.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/V4.mp3", isTrue: true },
+        { text: "Las plantas con flores dan frutos con semillas.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/V5.mp3", isTrue: true },
+        { text: "Los arbustos tienen tronco duro y grueso.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/F1.mp3", isTrue: false },
+        { text: "En las praderas encontramos muchos árboles.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/F2.mp3", isTrue: false },
+        { text: "Las plantas cultivadas crecen solas sin que nadie las cuide.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/F3.mp3", isTrue: false },
+        { text: "Las partes de las plantas son: raíz, tallo y árbol.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/F4.mp3", isTrue: false },
+        { text: "Las plantas no son seres vivos.", audio: "https://raw.githubusercontent.com/ManuelVS8/Audios-juegos-SCIENCE/refs/heads/main/Planta1/Verdadero_falso/F5.mp3", isTrue: false }
+    ];
+
+    let isMuted = false, startTime = 0, timerInterval = null, totalElapsed = 0;
+    let j1Idx = 0, j1Correct = 0, j1ActiveList = [];
+    let currentVoiceAudio = null;
+
+    // Precarga de sonidos del sistema
+    const audioObjects = {};
+    Object.keys(audioFiles).forEach(key => {
+        audioObjects[key] = new Audio(audioFiles[key]);
+        audioObjects[key].load();
+    });
+
+    function playSnd(key) {
+        if(isMuted) return;
+        const a = audioObjects[key];
+        a.currentTime = 0;
+        a.play().catch(e => console.log("Error audio:", e));
+    }
+
+    function playVoice(url) {
+        if(isMuted) return;
+        if(currentVoiceAudio) { currentVoiceAudio.pause(); currentVoiceAudio = null; }
+        const secureUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/');
+        currentVoiceAudio = new Audio(secureUrl);
+        currentVoiceAudio.play().catch(e => console.log("Error voz:", e));
+    }
+
+    function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+    
+    function formatTime(ms) {
+        const d = ms / 1000;
+        const m = Math.floor(d / 60).toString().padStart(2, '0');
+        const s = Math.floor(d % 60).toString().padStart(2, '0');
+        const dec = Math.round((d % 1) * 10);
+        return `${m}:${s}.${dec}`;
+    }
+
+    function applyShake(id) {
+        const el = document.getElementById(id);
+        el.classList.remove('shake');
+        void el.offsetWidth;
+        el.classList.add('shake');
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function initGame() {
+        j1Idx = 0; j1Correct = 0;
+        j1ActiveList = shuffle([...J1_ITEMS]);
+        updateCard();
+    }
+
+    function updateCard() {
+        if(j1Idx >= j1ActiveList.length) {
+            setTimeout(showFinal, 600);
+            return;
+        }
+        const item = j1ActiveList[j1Idx];
+        document.getElementById('j1Text').textContent = item.text;
+        document.getElementById('prog1').style.width = ((j1Idx / j1ActiveList.length) * 100) + '%';
+        playVoice(item.audio);
+    }
+
+    function checkAnswer(userChoice) {
+        if(userChoice === j1ActiveList[j1Idx].isTrue) {
+            j1Correct++;
+            playSnd('correcto');
+        } else {
+            playSnd('error');
+            applyShake('j1Card');
+        }
+        j1Idx++;
+        updateCard();
+    }
+
+    function showFinal() {
+        if(currentVoiceAudio) currentVoiceAudio.pause();
+        clearInterval(timerInterval);
+        showScreen('finalScreen');
+        
+        const score = Math.round((j1Correct / J1_ITEMS.length) * 100);
+        document.getElementById('finalScore').textContent = score;
+        document.getElementById('totalTime').textContent = formatTime(totalElapsed);
+
+        if(score === 100) {
+            document.getElementById('trophyBox').style.display = 'block';
+            document.getElementById('finalMsg').textContent = '¡Enhorabuena, puntuación máxima!';
+            playSnd('victoria');
+            createConfetti();
+        } else {
+            document.getElementById('trophyBox').style.display = 'none';
+            document.getElementById('finalMsg').textContent = '¡Buen trabajo! Sigue practicando';
+            playSnd('completado');
+        }
+    }
+
+    function createConfetti() {
+        for(let i=0; i<100; i++){
+            setTimeout(() => {
+                const c = document.createElement('div');
+                c.className = 'confetti';
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.top = '-10px';
+                c.style.backgroundColor = ['#f59e42', '#2ecc71', '#254fba'][Math.floor(Math.random()*3)];
+                c.style.setProperty('--tx', (Math.random()-0.5) * 400 + 'px');
+                c.style.setProperty('--ty', window.innerHeight + 'px');
+                document.body.appendChild(c);
+                setTimeout(() => c.remove(), 3000);
+            }, i * 30);
+        }
+    }
+
+    // EVENTOS
+    document.getElementById('startBtn').onclick = () => {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        playSnd('tap');
+        showScreen('game1Screen');
+        startTime = Date.now();
+        timerInterval = setInterval(() => { 
+            totalElapsed = Date.now() - startTime; 
+            document.getElementById('timerDisplay').textContent = formatTime(totalElapsed); 
+        }, 100);
+        initGame();
+    };
+
+    document.getElementById('btnVerdadero').onclick = () => checkAnswer(true);
+    document.getElementById('btnFalso').onclick = () => checkAnswer(false);
+    
+    document.getElementById('restartBtn').onclick = () => {
+        playSnd('tap');
+        location.reload();
+    };
+
+    document.getElementById('muteBtn').onclick = () => {
+        isMuted = !isMuted;
+        document.getElementById('muteBtn').textContent = isMuted ? '🔇' : '🔊';
+        if(isMuted && currentVoiceAudio) currentVoiceAudio.pause();
+    };
+</script>
+</body>
+</html>
